@@ -1,3 +1,12 @@
+"""
+    #FIXME: 
+    1. Rotate the bird as it moves and falls down
+    2. Random generation of pipes
+    3. Keep track of scores
+    4. AI
+"""
+
+
 import pygame
 
 # pygame setup
@@ -23,6 +32,7 @@ x, y = 200, 360
 pipe_up_x, pipe_up_y = 900, -50
 pipe_down_x, pipe_down_y = 900, 550
 
+# fill the screen with a color to hide anything from last frame
 sky_bg = pygame.image.load("background.jpg").convert_alpha()  #To load regular surface as images
 #text_surface = test_font.render(text, anti-alias = True -> smooth edges. for pixel art = False , color)
 
@@ -41,16 +51,12 @@ while running:
     rotated_image_rect = rotated_image.get_rect(center=bird_rect.center)
 
     # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                y -= 65
+                y -= 55
         if event.type == pygame.QUIT:
             running = False
-
-    # fill the screen with a color to hide anything from last frame
-    screen.fill("sky blue")
  
     # RENDER YOUR GAME HERE
 
