@@ -24,8 +24,7 @@ pygame.display.set_icon(icon)
 # To control fps
 clock = pygame.time.Clock()
 
-# For font 
-# test_font = pygame.font.Font(type, size)
+score = 0
 
 running = True
 x, y = 200, 360
@@ -47,6 +46,10 @@ while running:
     bird_surf = pygame.image.load("bird.png").convert_alpha()
     bird_rect = bird_surf.get_rect(center = (x, y))
 
+    # For Score and font 
+    test_font = pygame.font.Font('Hack-Bold.ttf', 50)
+    text_surface = test_font.render('Score: ' + str(score), False, 'Black')
+
     #rotated_image = pygame.transform.rotate(bird_surf, 45)
     #rotated_image_rect = rotated_image.get_rect(center=bird_rect.center)
 
@@ -60,8 +63,12 @@ while running:
  
     # RENDER YOUR GAME HERE
 
+    # pace = clock.get_time()
+    # print(pace)
+
     #if pipe goes too left, render it back to the right as the obstacle
-    if top_pipe_rect.x < -200: 
+    if top_pipe_rect.x < 0:
+        score += 1 
         top_pipe_rect.x, bottom_pipe_rect.x = 900, 900
         bottom_pipe_rect.y = random.randint(300, 600)
         top_pipe_rect.y = bottom_pipe_rect.y - 600
@@ -77,6 +84,7 @@ while running:
     screen.blit(bird_surf, bird_rect)
     screen.blit(top_pipe, top_pipe_rect)
     screen.blit(bottom_pipe, bottom_pipe_rect)
+    screen.blit(text_surface, (700, 30))
 
     if bird_rect.colliderect(top_pipe_rect) or bird_rect.colliderect(bottom_pipe_rect):
         running = False
