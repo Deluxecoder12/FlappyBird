@@ -50,9 +50,6 @@ while running:
     test_font = pygame.font.Font('Hack-Bold.ttf', 50)
     text_surface = test_font.render('Score: ' + str(score), False, 'Black')
 
-    #rotated_image = pygame.transform.rotate(bird_surf, 45)
-    #rotated_image_rect = rotated_image.get_rect(center=bird_rect.center)
-
     # poll for events
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
