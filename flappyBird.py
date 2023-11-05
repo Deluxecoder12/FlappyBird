@@ -6,8 +6,8 @@
     4. AI
 """
 
-
 import pygame
+import random
 
 # pygame setup
 pygame.init()
@@ -29,8 +29,8 @@ clock = pygame.time.Clock()
 
 running = True
 x, y = 200, 360
-pipe_up_x, pipe_up_y = 900, -50
-pipe_down_x, pipe_down_y = 900, 550
+pipe_down_x, pipe_down_y = 900, random.randint(300, 600)
+pipe_up_x, pipe_up_y = 900, pipe_down_y - 600
 
 # fill the screen with a color to hide anything from last frame
 sky_bg = pygame.image.load("background.jpg").convert_alpha()  #To load regular surface as images
@@ -47,8 +47,8 @@ while running:
     bird_surf = pygame.image.load("bird.png").convert_alpha()
     bird_rect = bird_surf.get_rect(center = (x, y))
 
-    rotated_image = pygame.transform.rotate(bird_surf, 45)
-    rotated_image_rect = rotated_image.get_rect(center=bird_rect.center)
+    #rotated_image = pygame.transform.rotate(bird_surf, 45)
+    #rotated_image_rect = rotated_image.get_rect(center=bird_rect.center)
 
     # poll for events
     for event in pygame.event.get():
@@ -61,8 +61,11 @@ while running:
     # RENDER YOUR GAME HERE
 
     #if pipe goes too left, render it back to the right as the obstacle
-    if top_pipe_rect.x < -200: top_pipe_rect.x = 900
-    if bottom_pipe_rect.x < -200: bottom_pipe_rect.x = 900
+    if top_pipe_rect.x < -200: 
+        top_pipe_rect.x, bottom_pipe_rect.x = 900, 900
+        bottom_pipe_rect.y = random.randint(300, 600)
+        top_pipe_rect.y = bottom_pipe_rect.y - 600
+    
     
     # Bird tries going across top and bottom border
     if 10 <=  bird_rect.y <= 650:
