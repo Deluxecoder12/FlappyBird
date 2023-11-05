@@ -1,9 +1,10 @@
 """
-    #FIXME: 
-    1. Rotate the bird as it moves and falls down
-    2. Random generation of pipes
-    3. Keep track of scores
-    4. AI
+    **FIXME: 
+
+    *Generation of pipes
+    *Rotate the bird as it moves and falls down
+    *AI
+
 """
 
 import pygame
@@ -30,6 +31,7 @@ running = True
 x, y = 200, 360
 pipe_down_x, pipe_down_y = 900, random.randint(300, 600)
 pipe_up_x, pipe_up_y = 900, pipe_down_y - 600
+bird_gravity = 0
 
 # fill the screen with a color to hide anything from last frame
 sky_bg = pygame.image.load("background.jpg").convert_alpha()  #To load regular surface as images
@@ -41,10 +43,11 @@ top_pipe_rect = top_pipe.get_rect(topleft = (pipe_up_x, pipe_up_y))
 bottom_pipe = pygame.image.load("pipe.png").convert_alpha()
 bottom_pipe_rect = bottom_pipe.get_rect(topleft = (pipe_down_x, pipe_down_y))
 
+# Bird
+bird_surf = pygame.image.load("up_bird.png").convert_alpha()
+bird_rect = bird_surf.get_rect(center = (x, y))
+
 while running:
-    # Bird
-    bird_surf = pygame.image.load("bird.png").convert_alpha()
-    bird_rect = bird_surf.get_rect(center = (x, y))
 
     # For Score and font 
     test_font = pygame.font.Font('Hack-Bold.ttf', 50)
@@ -54,14 +57,10 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                y -= 55
+                bird_gravity = -10
+
         if event.type == pygame.QUIT:
             running = False
- 
-    # RENDER YOUR GAME HERE
-
-    # pace = clock.get_time()
-    # print(pace)
 
     #if pipe goes too left, render it back to the right as the obstacle
     if top_pipe_rect.x < 0:
@@ -70,10 +69,10 @@ while running:
         bottom_pipe_rect.y = random.randint(300, 600)
         top_pipe_rect.y = bottom_pipe_rect.y - 600
     
-    
     # Bird tries going across top and bottom border
-    if 10 <=  bird_rect.y <= 650:
-        y += 3
+    bird_gravity += 1
+    if 70 <=  bird_rect.bottom <= 650:
+        bird_rect.y += bird_gravity
     else:
         running = False
 
@@ -94,5 +93,6 @@ while running:
 
     clock.tick(60)  # limits FPS to 60
 
+print(score)
 pygame.quit()
     
