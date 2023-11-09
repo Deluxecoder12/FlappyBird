@@ -44,7 +44,7 @@ bottom_pipe = pygame.image.load("pipe.png").convert_alpha()
 bottom_pipe_rect = bottom_pipe.get_rect(topleft = (pipe_down_x, pipe_down_y))
 
 # Bird
-bird_surf = pygame.image.load("up_bird.png").convert_alpha()
+bird_surf = pygame.image.load("down_bird.png").convert_alpha()
 bird_rect = bird_surf.get_rect(center = (x, y))
 
 while running:
@@ -70,11 +70,18 @@ while running:
         top_pipe_rect.y = bottom_pipe_rect.y - 600
     
     # Bird tries going across top and bottom border
+    temp_bird_y = bird_rect.y
     bird_gravity += 1
     if 70 <=  bird_rect.bottom <= 650:
         bird_rect.y += bird_gravity
     else:
         running = False
+    
+    # Tilt bird when it falls
+    if bird_rect.y - 10 > temp_bird_y:
+        bird_surf = pygame.image.load("down_bird.png").convert_alpha()
+    else:
+        bird_surf = pygame.image.load("up_bird.png").convert_alpha()
 
     screen.blit(sky_bg, (0, 0))
     screen.blit(bird_surf, bird_rect)
