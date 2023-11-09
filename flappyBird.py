@@ -2,7 +2,6 @@
     **FIXME: 
 
     *Generation of pipes
-    *Rotate the bird as it moves and falls down
     *AI
 
 """
