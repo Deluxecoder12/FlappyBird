@@ -1,1 +1,2 @@
-screen.blit(bird_surf, bird_rect)
+top_pipe_rect.x -= 3
+    # bottom_pipe_rect.x -= 3
