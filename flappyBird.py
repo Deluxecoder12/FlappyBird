@@ -59,7 +59,7 @@ top_pipe = pygame.transform.rotate(pygame.image.load("pipe.png").convert_alpha()
 bottom_pipe = pygame.image.load("pipe.png").convert_alpha()
 
 # Bird
-bird_surf = pygame.image.load("down_bird.png").convert_alpha()
+bird_surf = pygame.image.load("up_bird.png").convert_alpha()
 bird_rect = bird_surf.get_rect(center = (x, y))
 
 # Timer
@@ -71,11 +71,10 @@ pygame.time.set_timer(obstacle_timer, speed_gen)
 while running:
     pipe_down_x, pipe_down_y = 1000, random.randint(300, 600)
     pipe_up_x, pipe_up_y = 1000, pipe_down_y - 600
-    
+
     top_pipe_rect = top_pipe.get_rect(topleft = (pipe_up_x, pipe_up_y))
     bottom_pipe_rect = bottom_pipe.get_rect(topleft = (pipe_down_x, pipe_down_y))
     
-    bird_surf = pygame.image.load("down_bird.png").convert_alpha()
     # For Score and font 
     test_font = pygame.font.Font('Hack-Bold.ttf', 50)
     text_surface = test_font.render('Score: ' + str(score), False, 'Black')
@@ -84,8 +83,6 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                bird_surf = pygame.image.load("up_bird.png").convert_alpha()
-                screen.blit(bird_surf, bird_rect)
                 bird_gravity = -10
 
         if event.type == obstacle_timer:
@@ -96,11 +93,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    screen.blit(sky_bg, (0, 0))
-    screen.blit(bird_surf, bird_rect)    
-    screen.blit(text_surface, (700, 30))
-
-    obstacle_rect_list = obstacle_gen(obstacle_rect_list)
 
     if speed_gen + 15 == temp:
         temp = speed_gen
@@ -121,7 +113,11 @@ while running:
     else:
         bird_surf = pygame.image.load("up_bird.png").convert_alpha()
 
+    screen.blit(sky_bg, (0, 0))
+    screen.blit(bird_surf, bird_rect)    
+    screen.blit(text_surface, (700, 30))
 
+    obstacle_rect_list = obstacle_gen(obstacle_rect_list)
 
     # flip() the display to put your work on screen
     pygame.display.update()
