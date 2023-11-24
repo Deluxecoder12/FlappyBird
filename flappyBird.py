@@ -1,8 +1,6 @@
 """
     **FIXME: 
 
-    *Generation of pipes
-    *Rotate the bird as it moves and falls down
     *AI
 
 """
@@ -36,10 +34,8 @@ pygame.init()
 
 screen = pygame.display.set_mode((1000, 720))
 
-# Title bar
+# Name, Icon for title bar
 pygame.display.set_caption("Flappity")
-
-# Icon for title bar
 icon = pygame.image.load("logo.png").convert_alpha()
 pygame.display.set_icon(icon)
 
@@ -48,8 +44,8 @@ clock = pygame.time.Clock()
 
 score = 0
 speed = 3.0
-speed_gen = 3500
-temp = 3500
+speed_gen = temp = 3500
+
 running = True
 x, y = 200, 360
 bird_gravity = 0
@@ -84,7 +80,6 @@ while running:
     test_font = pygame.font.Font('Hack-Bold.ttf', 50)
     text_surface = test_font.render('Score: ' + str(score), False, 'Black')
 
-
     # poll for events
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
@@ -95,34 +90,21 @@ while running:
 
         if event.type == obstacle_timer:
             obstacle_rect_list.append([bottom_pipe.get_rect(topleft = (pipe_down_x, pipe_down_y)), top_pipe.get_rect(topleft = (pipe_up_x, pipe_up_y))])
-            speed_gen -= 100
+            if speed_gen >= 10: speed_gen -= 10
             pygame.time.set_timer(obstacle_timer, speed_gen)
 
         if event.type == pygame.QUIT:
             running = False
 
     screen.blit(sky_bg, (0, 0))
-    screen.blit(bird_surf, bird_rect)
-    #screen.blit(top_pipe, top_pipe_rect)
-    #screen.blit(bottom_pipe, bottom_pipe_rect)
-
-    #obstacle_gen(obstacle_rect_list)
-    
+    screen.blit(bird_surf, bird_rect)    
     screen.blit(text_surface, (700, 30))
 
-    #if pipe goes too left, render it back to the right as the obstacle
-    if top_pipe_rect.x < 700: # FIXME
-        score += 1 
-        # top_pipe_rect.x, bottom_pipe_rect.x = 900, 900
-        # bottom_pipe_rect.y = random.randint(300, 600)
-        # top_pipe_rect.y = bottom_pipe_rect.y - 600
     obstacle_rect_list = obstacle_gen(obstacle_rect_list)
 
     if speed_gen + 15 == temp:
         temp = speed_gen
-        speed += 0.5
-
-    #bird_surf = pygame.image.load("up_bird.png").convert_alpha()
+        speed += 0.1
 
     # Bird tries going across top and bottom border
     bird_gravity += 1
@@ -132,10 +114,6 @@ while running:
         # Bird crashes to the borders or the pipes
         running = False
         screen.fill('Yellow')
-        
-    
-    # top_pipe_rect.x -= 3
-    # bottom_pipe_rect.x -= 3
 
     # flip() the display to put your work on screen
     pygame.display.update()
