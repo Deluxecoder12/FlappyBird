@@ -59,7 +59,7 @@ top_pipe = pygame.transform.rotate(pygame.image.load("pipe.png").convert_alpha()
 bottom_pipe = pygame.image.load("pipe.png").convert_alpha()
 
 # Bird
-bird_surf = pygame.image.load("up_bird.png").convert_alpha()
+bird_surf = pygame.image.load("down_bird.png").convert_alpha()
 bird_rect = bird_surf.get_rect(center = (x, y))
 
 # Timer
@@ -107,13 +107,21 @@ while running:
         speed += 0.1
 
     # Bird tries going across top and bottom border
+    temp_bird_y = bird_rect.y
     bird_gravity += 1
     if 70 <=  bird_rect.bottom <= 650 and collisions(bird_rect, obstacle_rect_list):
         bird_rect.y += bird_gravity
     else:
         # Bird crashes to the borders or the pipes
         running = False
-        screen.fill('Yellow')
+    
+    # Tilt bird when it falls
+    if bird_rect.y - 10 > temp_bird_y:
+        bird_surf = pygame.image.load("down_bird.png").convert_alpha()
+    else:
+        bird_surf = pygame.image.load("up_bird.png").convert_alpha()
+
+
 
     # flip() the display to put your work on screen
     pygame.display.update()
