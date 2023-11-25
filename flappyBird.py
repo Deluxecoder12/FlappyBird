@@ -96,7 +96,7 @@ while running:
 
     if speed_gen + 15 == temp:
         temp = speed_gen
-        speed += 0.1
+        speed += 0.000000000000000000001
 
     # Bird tries going across top and bottom border
     temp_bird_y = bird_rect.y
