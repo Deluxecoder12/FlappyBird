@@ -87,16 +87,16 @@ while running:
 
         if event.type == obstacle_timer:
             obstacle_rect_list.append([bottom_pipe.get_rect(topleft = (pipe_down_x, pipe_down_y)), top_pipe.get_rect(topleft = (pipe_up_x, pipe_up_y))])
-            if speed_gen >= 10: speed_gen -= 10
+            if speed_gen >= 10: speed_gen -= 1
             pygame.time.set_timer(obstacle_timer, speed_gen)
 
         if event.type == pygame.QUIT:
             running = False
 
 
-    if speed_gen + 15 == temp:
+    if speed_gen + 15 >= temp:
         temp = speed_gen
-        speed += 0.1
+        speed += 0.000000000000000001
 
     # Bird tries going across top and bottom border
     temp_bird_y = bird_rect.y
@@ -115,9 +115,9 @@ while running:
 
     screen.blit(sky_bg, (0, 0))
     screen.blit(bird_surf, bird_rect)    
+    obstacle_rect_list = obstacle_gen(obstacle_rect_list)
     screen.blit(text_surface, (700, 30))
 
-    obstacle_rect_list = obstacle_gen(obstacle_rect_list)
 
     # flip() the display to put your work on screen
     pygame.display.update()
