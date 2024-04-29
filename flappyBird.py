@@ -4,9 +4,10 @@
     *AI
 
 """
-
+import os
 import pygame
 import random
+import neat
 
 class Bird(pygame.sprite.Sprite):
     def __init__(self):
@@ -49,11 +50,11 @@ class Bird(pygame.sprite.Sprite):
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, loc, speed, type="bottom-pipe"):
         super().__init__()
-
+        self.type = type
         self.speed = speed
         self.pipe_down_x, self.pipe_up_x = 1000, 1000
 
-        if type == "top-pipe":
+        if self.type == "top-pipe":
             self.image = pygame.transform.rotate(pygame.image.load("pipe.png").convert_alpha(), 180)
             self.rect = self.image.get_rect(topleft = (self.pipe_up_x, loc))
         else:
@@ -63,14 +64,12 @@ class Obstacle(pygame.sprite.Sprite):
     def destroy(self):
         if self.rect.x <= -195:
             self.kill()
-            update_score()
 
     def update(self):
-        #self.obstacle_rect_list = self.obstacle_gen()
         self.rect.x -= self.speed
         self.destroy()
 
-def collision_sprite():
+def collision_sprite(bird, obstacle_group):
     if pygame.sprite.spritecollide(bird.sprite, obstacle_group, False):
         obstacle_group.empty()
         return False
@@ -78,91 +77,125 @@ def collision_sprite():
         return False
     return True
 
-def update_score():
-    global score
-    score += 0.5
+def calculate_neural_network_inputs(bird, obstacle_group):
+    screen_width = 1000  # Assuming screen width is 1000
+    bird_x = bird.sprite.rect.centerx  # Horizontal position of the bird
+    bird_y = bird.sprite.rect.centery  # Vertical position of the bird
 
-# pygame setup
-pygame.init()
+    # Initialize distances with a large number if no pipes are present
+    from_bird_to_pipe = float('inf')
+    vertical_distance = float('inf')
 
-screen = pygame.display.set_mode((1000, 720))
+    for obstacle in obstacle_group:
+        # Since pipes come in pairs, check for bottom pipe to calculate gap center
+        if obstacle.rect.left > bird_x and obstacle.type == "bottom-pipe":
+            # Horizontal distance to the next pipe
+            distance_to_next_pipe = obstacle.rect.left - bird_x
 
-# Name, Icon for title bar
-pygame.display.set_caption("Flappity")
-icon = pygame.image.load("logo.png").convert_alpha()
-pygame.display.set_icon(icon)
+            # If this pipe is closer than the previous closest, update the distances
+            if distance_to_next_pipe < from_bird_to_pipe:
+                from_bird_to_pipe = distance_to_next_pipe
+                
+                # Assuming the gap height and top pipe are constant
+                top_pipe_height = 600  # Placeholder, adjust based on your game setup
+                gap_height = 200  # Placeholder, adjust based on your game setup
+                gap_center = top_pipe_height + gap_height / 2
 
-# To control fps
-clock = pygame.time.Clock()
+                # Vertical distance to the center of the gap
+                vertical_distance = gap_center - bird_y
 
-score = 0
-speed = 3.0
-speed_gen = temp = 3500
+    return from_bird_to_pipe, vertical_distance
 
-running = True
+def eval_genomes(genomes, config):
+    for genome_id, genome in genomes:
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        genome.fitness = play_game(net)  # Your function to play the game
 
-# fill the screen with a color to hide anything from last frame
-sky_bg = pygame.image.load("background.jpg").convert_alpha()  #To load regular surface as images
-#text_surface = test_font.render(text, anti-alias = True -> smooth edges. for pixel art = False , color)
+def play_game(net):
+    # Reset or set up the game environment
+    pygame.init()
+    screen = pygame.display.set_mode((1000, 720))
+    bird = pygame.sprite.GroupSingle()
+    bird.add(Bird())
+    obstacle_group = pygame.sprite.Group()
 
-# Timer
-obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, speed_gen)
+    score = 0
+    running = True
+    clock = pygame.time.Clock()
 
-bird = pygame.sprite.GroupSingle()
-bird.add(Bird())
+    score = 0
+    speed = 3.0
+    speed_gen = 2500
 
-obstacle_group = pygame.sprite.Group()
-
-bg_music = pygame.mixer.Sound('FlappyBirdBG.mp3')
-bg_music.play(loops=-1)
-
-# For font
-test_font = pygame.font.Font('Hack-Bold.ttf', 40)
-
-while running:    
-    # For Score 
-    text_surface = test_font.render('Score: ' + str(int(score)), False, 'Black')
-
-    # poll for events
-    for event in pygame.event.get():
-        if event.type == obstacle_timer:
-            temp -= 100
-
-            generate_y = random.randint(300, 600)
-            top_pipe1 = Obstacle(generate_y - 600, speed, "top-pipe")
-            bottom_pipe1 = Obstacle(generate_y, speed)
-
-            obstacle_group.add(top_pipe1, bottom_pipe1)
-
-            pygame.time.set_timer(obstacle_timer, speed_gen)
-
-        if event.type == pygame.QUIT:
-            running = False
-
-
-    if temp < 0:
-        speed += 0.0000000000000000001
-        temp = speed_gen
-
-    screen.blit(sky_bg, (0, 0))
+    obstacle_timer = pygame.USEREVENT + 1
+    pygame.time.set_timer(obstacle_timer, speed_gen)
     
-    obstacle_group.draw(screen)
-    obstacle_group.update()
+    # Start the main game loop
+    while running:
+        # Poll events (simulate user input)
+        for event in pygame.event.get():
+            if event.type == obstacle_timer:
+                generate_y = random.randint(300, 600)
+                top_pipe1 = Obstacle(generate_y - 600, speed, "top-pipe")
+                bottom_pipe1 = Obstacle(generate_y, speed)
+
+                obstacle_group.add(top_pipe1, bottom_pipe1)
+
+                pygame.time.set_timer(obstacle_timer, speed_gen)
+
+            if event.type == pygame.QUIT:
+                running = False
+
+        # Neural network input: distance to next pipe, bird's y position, etc.
+        from_bird_to_pipe, vertical_distance = calculate_neural_network_inputs(bird, obstacle_group)
+
+        # Use the neural network to decide whether to jump
+        output = net.activate((from_bird_to_pipe, bird.sprite.rect.y, vertical_distance))
+        if output[0] > 0.5:  # threshold to jump
+            bird.sprite.gravity = -7  # jump
+
+        # Game logic
+        obstacle_group.update()
+        bird.update()
+
+        # Collision check
+        if not collision_sprite(bird, obstacle_group):
+            running = False  # End the game simulation
+
+        # Update the game screen (optional, you could run without rendering for faster training)
+        screen.blit(pygame.image.load('background.jpg').convert_alpha(), (0, 0))
+        obstacle_group.draw(screen)
+        bird.draw(screen)
+        pygame.display.flip()
+
+        # Control the frame rate
+        clock.tick(30)
+
+        # Update score for fitness (might use a different metric)
+        score += 0.1  # Increment score as time passes
+
+    # Return the fitness score
+    return score
+
+
+
+def run(config_path):
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, 
+                                neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
     
-    bird.draw(screen)
-    bird.update()
-    
-    screen.blit(text_surface, (700, 30))
+    # Create the population, which is the top-level object for a NEAT run.
+    p = neat.Population(config)
 
-    running = collision_sprite()
+    # Add a reporter to show progress in the terminal.
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
 
-    # flip() the display to put your work on screen
-    pygame.display.update()
+    # Run until a solution is found.
+    winner = p.run(eval_genomes, 50)
 
-    clock.tick(60)  # limits FPS to 60
-
-print(score, speed_gen, speed)
-
-pygame.quit()
+if __name__ == "__main__":
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, "config-feedforward.txt")
+    run(config_path)
    
