@@ -16,8 +16,8 @@ class Bird(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(200, 360))
         self.temp_bird_y = 0
         self.gravity = 0
-        #self.jump_sound = pygame.mixer.Sound('')
-        #self.jump_sound.set_volume(num)
+        # self.jump_sound = pygame.mixer.Sound('jump.mp3')
+        # self.jump_sound.set_volume(3)
     
     def player_input(self):
         keys = pygame.key.get_pressed()
@@ -78,7 +78,6 @@ def collision_sprite(bird, obstacle_group):
     return True
 
 def calculate_neural_network_inputs(bird, obstacle_group):
-    screen_width = 1000  # Assuming screen width is 1000
     bird_x = bird.sprite.rect.centerx  # Horizontal position of the bird
     bird_y = bird.sprite.rect.centery  # Vertical position of the bird
 
@@ -96,10 +95,8 @@ def calculate_neural_network_inputs(bird, obstacle_group):
             if distance_to_next_pipe < from_bird_to_pipe:
                 from_bird_to_pipe = distance_to_next_pipe
                 
-                # Assuming the gap height and top pipe are constant
-                top_pipe_height = 600  # Placeholder, adjust based on your game setup
-                gap_height = 200  # Placeholder, adjust based on your game setup
-                gap_center = top_pipe_height + gap_height / 2
+                gap_height = 100  # The vertical space between the top and bottom pipes
+                gap_center = obstacle.rect.top + (gap_height / 2)  # Center of the gap
 
                 # Vertical distance to the center of the gap
                 vertical_distance = gap_center - bird_y
@@ -122,16 +119,22 @@ def play_game(net):
     score = 0
     running = True
     clock = pygame.time.Clock()
-
-    score = 0
-    speed = 3.0
-    speed_gen = 2500
+    speed = 5.0
+    speed_gen = 3500
+    frames_alive = 0
 
     obstacle_timer = pygame.USEREVENT + 1
-    pygame.time.set_timer(obstacle_timer, speed_gen)
+    pygame.time.set_timer(obstacle_timer, 500)
     
+    # For font
+    test_font = pygame.font.Font('Hack-Bold.ttf', 40)
+
+    last_passed_pipe = None  # Track the last pipe passed
+
     # Start the main game loop
     while running:
+        text_surface = test_font.render('Score: ' + str(int(score)), False, 'Black')
+
         # Poll events (simulate user input)
         for event in pygame.event.get():
             if event.type == obstacle_timer:
@@ -162,20 +165,30 @@ def play_game(net):
         if not collision_sprite(bird, obstacle_group):
             running = False  # End the game simulation
 
+        # Increment the frames_alive count
+        frames_alive += 1
+
+
+        for pipe in obstacle_group:
+            if pipe.rect.right < bird.sprite.rect.left and (last_passed_pipe is None):
+                score += 1  # Increment score for each pipe passed
+                pipe.kill()
+
         # Update the game screen (optional, you could run without rendering for faster training)
         screen.blit(pygame.image.load('background.jpg').convert_alpha(), (0, 0))
         obstacle_group.draw(screen)
         bird.draw(screen)
+        screen.blit(text_surface, (700, 30))
+        
         pygame.display.flip()
 
         # Control the frame rate
         clock.tick(30)
-
-        # Update score for fitness (might use a different metric)
-        score += 0.1  # Increment score as time passes
+        
 
     # Return the fitness score
-    return score
+    fitness = score + (frames_alive / 100.0)  # Adjust scoring formula as needed
+    return fitness
 
 
 
