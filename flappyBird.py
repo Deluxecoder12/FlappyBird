@@ -1,9 +1,3 @@
-"""
-    **FIXME: 
-
-    *AI
-
-"""
 import os
 import pygame
 import random
@@ -190,8 +184,6 @@ def play_game(net):
     fitness = score + (frames_alive / 100.0)  # Adjust scoring formula as needed
     return fitness
 
-
-
 def run(config_path):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, 
                                 neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
@@ -206,6 +198,7 @@ def run(config_path):
 
     # Run until a solution is found.
     winner = p.run(eval_genomes, 50)
+    print('\nBest genome:\n{!s}'.format(winner))
 
 if __name__ == "__main__":
     local_dir = os.path.dirname(__file__)
